@@ -12,9 +12,9 @@ camera_warmup_time = .2
 delta_thresh = 5
 min_area = 5000
 
-dropbox_app_key = 4j8guc5902blg9d
-dropbox_app_secret = 1ra4rejdoq7655i
-dropbox_access_token = naSB87XjOWgAAAAAAAAAC98N-JLXZ1mL64QcNVfA60idysi52ftH6wen-UvK38Li
+dropbox_app_key = "4j8guc5902blg9d"
+dropbox_app_secret = "1ra4rejdoq7655i"
+dropbox_access_token = "naSB87XjOWgAAAAAAAAAC98N-JLXZ1mL64QcNVfA60idysi52ftH6wen-UvK38Li"
 
 camera = PiCamera()
 camera.resolution = (640, 480)
