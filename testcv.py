@@ -15,4 +15,9 @@ camera.capture(rawCapture, format="bgr")
 image = rawCapture.array
 
 cv2.imshow("Image", image)
+
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+cv2.imshow("Gray", gray)
+
+
 cv2.waitKey(0)
