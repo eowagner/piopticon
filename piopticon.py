@@ -12,6 +12,10 @@ camera_warmup_time = .2
 delta_thresh = 5
 min_area = 5000
 
+dropbox_app_key = 4j8guc5902blg9d
+dropbox_app_secret = 1ra4rejdoq7655i
+dropbox_access_token = naSB87XjOWgAAAAAAAAAC98N-JLXZ1mL64QcNVfA60idysi52ftH6wen-UvK38Li
+
 camera = PiCamera()
 camera.resolution = (640, 480)
 camera.framerate = 16
@@ -20,12 +24,13 @@ rawCapture = PiRGBArray(camera, size=(640, 480))
 time.sleep(camera_warmup_time)
 
 avg = None
+lastUploaded = datetime.datetime.now()
 
 for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     frame = f.array
 
     timestamp = datetime.datetime.now()
-    text = "Unoccupied"
+    motion = False
 
     frame = imutils.resize(frame, width=500)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -54,11 +59,15 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
             continue	
         (x, y, w, h) = cv2.boundingRect(c)
         cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-        text = "Occupied"
+        motion = True
 
     ts = timestamp.strftime("%A %d %B %Y %I:%M:%S%p")
-    cv2.putText(frame, "Room Status: {}".format(text), (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+    # cv2.putText(frame, "Room Status: {}".format(text), (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
     cv2.putText(frame, ts, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+
+    if motion:
+        if (timestamp - lastUploaded).seconds >= min_upload_seconds:
+            cv2.imwrite("1.jpg", frame)
 
     cv2.imshow("Security Feed", frame)
     key = cv2.waitKey(1) & 0xFF
