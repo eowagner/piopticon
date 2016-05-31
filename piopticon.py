@@ -4,6 +4,7 @@ import imutils
 import cv2
 
 import sys
+import os
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
@@ -84,7 +85,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
 
                 localName = "{}.jpg".format(timestamp.strftime("%I:%M:%S%p"))
                 # dbxName = "/"+localName
-                dbxName = "/{}/{}.jpg".format(timestamp.strftime("%Y-%B-%d"), localName)
+                dbxName = "/{}/{}".format(timestamp.strftime("%Y-%B-%d"), localName)
                 cv2.imwrite(localName, frame)
 
                 with open(localName, 'r') as f:
@@ -104,6 +105,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
                         else:
                             print(err)
                             sys.exit()
+                os.remove(localName)
         else:
             motionCounter += 1
 
