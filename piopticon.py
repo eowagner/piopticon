@@ -19,22 +19,24 @@ from dropbox.exceptions import ApiError, AuthError
 from twilio.rest import TwilioRestClient
 
 
-min_text_seconds = 3600
-min_upload_seconds = 3.0
-min_motion_frames = 8
-camera_warmup_time = 2
-delta_thresh = 5
-min_area = 5000
-
 local_dir = "/home/pi/code/piopticon/" # Should probably get by system call -- no relative addresses work if the prog starts on boot
 
 conf = json.load(open(local_dir + "config.json"))
+
+min_text_seconds = conf["min_text_seconds"]
+min_upload_seconds = conf["min_upload_seconds"]
+min_motion_frames = conf["min_motion_frames"]
+camera_warmup_time = conf["camera_warmup_time"]
+delta_thresh = conf["delta_thresh"]
+min_area = conf["min_area"] # 10% of the size of the frame on which processing is done seems to work well
+resolution = tuple(conf["resolution"]) # (640, 480) works with fps=16, but I think there is weird downscaling going on
+fps = conf["fps"]
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-showvideo', action="store_true", default=False)
 args = vars(parser.parse_args())
 
-print "waiting in hope of wifi..."
+print "Waiting for wifi..."
 time.sleep(10)
 
 client = TwilioRestClient(conf["twilio_sid"], conf["twilio_token"])
@@ -46,9 +48,9 @@ except AuthError as err:
     sys.exit("ERROR: Invalid access token; try re-generating an access token from the app console on the web.")
 
 camera = PiCamera()
-camera.resolution = (640, 480)
-camera.framerate = 16
-rawCapture = PiRGBArray(camera, size=(640, 480))
+camera.resolution = resolution
+camera.framerate = fps
+rawCapture = PiRGBArray(camera, size=resolution)
 
 time.sleep(camera_warmup_time)
 
