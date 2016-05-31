@@ -19,7 +19,7 @@ conf = json.load(open("config.json"))
 
 min_text_seconds = 3600
 min_upload_seconds = 3.0
-min_motion_frames = 10
+min_motion_frames = 8
 camera_warmup_time = 2
 delta_thresh = 5
 min_area = 5000
