@@ -14,7 +14,7 @@ from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
 from twilio.rest import TwilioRestClient
 
-conf = json.load(open("conf.json"))
+conf = json.load(open("config.json"))
 
 min_text_seconds = 7200
 min_upload_seconds = 3.0
