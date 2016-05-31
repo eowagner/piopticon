@@ -104,7 +104,7 @@ try:
                     lastUploaded = timestamp
 
                     name = "{}.jpg".format(timestamp.strftime("%I:%M:%S%p"))
-                    localName = "/home/code/piopticon/"+name
+                    localName = "/home/pi/code/piopticon/"+name
                     # dbxName = "/"+localName
                     dbxName = "/{}/{}".format(timestamp.strftime("%Y-%B-%d"), name)
                     cv2.imwrite(localName, frame)
