@@ -88,16 +88,16 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
                 try:
                     dbx.files_upload(f, fName, mode=WriteMode('overwrite'))
                 except ApiError as err:
-                # This checks for the specific error where a user doesn't have
-                # enough Dropbox space quota to upload this file
-                if err.error.is_path() and err.error.get_path().error.is_insufficient_space():
-                    sys.exit("ERROR: Cannot back up; insufficient space.")
-                elif err.user_message_text:
-                    print(err.user_message_text)
-                    sys.exit()
-                else:
-                    print(err)
-                    sys.exit()
+                    # This checks for the specific error where a user doesn't have
+                    # enough Dropbox space quota to upload this file
+                    if err.error.is_path() and err.error.get_path().error.is_insufficient_space():
+                        sys.exit("ERROR: Cannot back up; insufficient space.")
+                    elif err.user_message_text:
+                        print(err.user_message_text)
+                        sys.exit()
+                    else:
+                        print(err)
+                        sys.exit()
 
 
     cv2.imshow("Security Feed", frame)
