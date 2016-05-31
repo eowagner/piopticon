@@ -82,8 +82,9 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
             if (timestamp - lastUploaded).seconds >= min_upload_seconds:
                 lastUploaded = timestamp
 
-                localName = "{}.jpg".format(timestamp.strftime("%I:%M%S%p"))
-                dbxName = "/"+localName
+                localName = "{}.jpg".format(timestamp.strftime("%I:%M:%S%p"))
+                # dbxName = "/"+localName
+                dbxName = "/{}/{}.jpg".format(timestamp.strftime("%Y-%B-%d"), localName)
                 cv2.imwrite(localName, frame)
 
                 with open(localName, 'r') as f:
