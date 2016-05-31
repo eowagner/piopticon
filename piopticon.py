@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 import imutils
@@ -7,6 +9,7 @@ import sys
 import os
 import datetime
 import time
+
 import json
 import argparse
 
