@@ -5,14 +5,16 @@ import cv2
 
 import sys
 import os
+import datetime
+import time
+import json
+
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
-
 from twilio.rest import TwilioRestClient
 
-import datetime
-import time
+conf = json.load("conf.json")
 
 min_text_seconds = 7200
 min_upload_seconds = 3.0
@@ -25,7 +27,8 @@ dropbox_access_token = "KAelwhHrajMAAAAAAAAeygqEn85CoJbOBXqzBEV568qXeMM6d7qcRuWf
 
 TWILIO_ACCOUNT_SID = "AC1d0ac93061063ebcfa142779c5e62875"
 TWILIO_AUTH_TOKEN = "a8d86e42d0a4b68106b2499a00d0fa0b"
-client = TwilioRestClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+# client = TwilioRestClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+client = TwilioRestClient(conf["twilio_sid"], conf["twilio_token"])
 
 camera = PiCamera()
 camera.resolution = (640, 480)
@@ -34,7 +37,7 @@ rawCapture = PiRGBArray(camera, size=(640, 480))
 
 time.sleep(camera_warmup_time)
 
-dbx = dropbox.Dropbox(dropbox_access_token)
+dbx = dropbox.Dropbox(conf["dropbox_token"])
 try:
     dbx.users_get_current_account()
 except AuthError as err:
