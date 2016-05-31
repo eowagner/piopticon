@@ -13,8 +13,8 @@ import time
 
 
 min_upload_seconds = 3.0
-min_motion_frames = 4
-camera_warmup_time = .2
+min_motion_frames = 8
+camera_warmup_time = 2
 delta_thresh = 5
 min_area = 5000
 
@@ -78,10 +78,14 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
 
     if motion:
         if motionCounter >= min_motion_frames:
+            motionCounter = 0
             if (timestamp - lastUploaded).seconds >= min_upload_seconds:
+                lastUploaded = timestamp
+
                 localName = "{}.jpg".format(timestamp.strftime("%I:%M%S%p"))
                 dbxName = "/"+localName
                 cv2.imwrite(localName, frame)
+
                 with open(localName, 'r') as f:
                     # We use WriteMode=overwrite to make sure that the settings in the file
                     # are changed on upload
