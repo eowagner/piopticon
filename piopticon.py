@@ -43,7 +43,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     timestamp = datetime.datetime.now()
     motion = False
 
-    frame = imutils.resize(frame, width=500)
+    # smallFrame = imutils.resize(frame, width=500)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
@@ -79,7 +79,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     if motion:
         if motionCounter >= min_motion_frames:
             if (timestamp - lastUploaded).seconds >= min_upload_seconds:
-                localName = "1.jpg"
+                localName = "{}.jpg".format(timestamp.strftime("%I:%M%S%p"))
                 dbxName = "/"+localName
                 cv2.imwrite(localName, frame)
                 with open(localName, 'r') as f:
