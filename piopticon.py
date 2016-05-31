@@ -79,14 +79,15 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
 
     if motion:
         if (timestamp - lastUploaded).seconds >= min_upload_seconds:
-            fName = "1.jpg"
-            cv2.imwrite(fName, frame)
-            with open(fName, 'r') as f:
+            localName = "1.jpg"
+            dbxName = "/"+localName
+            cv2.imwrite(localName, frame)
+            with open(localName, 'r') as f:
                 # We use WriteMode=overwrite to make sure that the settings in the file
                 # are changed on upload
-                print("Uploading " + fName + " to Dropbox as " + fName + "...")
+                print("Uploading " + localName + " to Dropbox as " + dbxName + "...")
                 try:
-                    dbx.files_upload(f, fName, mode=WriteMode('overwrite'))
+                    dbx.files_upload(f, dbxName, mode=WriteMode('overwrite'))
                 except ApiError as err:
                     # This checks for the specific error where a user doesn't have
                     # enough Dropbox space quota to upload this file
