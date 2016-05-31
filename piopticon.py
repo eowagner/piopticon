@@ -8,6 +8,7 @@ import os
 import datetime
 import time
 import json
+import argparse
 
 import dropbox
 from dropbox.files import WriteMode
@@ -23,7 +24,15 @@ camera_warmup_time = 2
 delta_thresh = 5
 min_area = 5000
 
+parser.add_argument('-showvideo', action="store_true", default=False)
+
 client = TwilioRestClient(conf["twilio_sid"], conf["twilio_token"])
+
+dbx = dropbox.Dropbox(conf["dropbox_token"])
+try:
+    dbx.users_get_current_account()
+except AuthError as err:
+    sys.exit("ERROR: Invalid access token; try re-generating an access token from the app console on the web.")
 
 camera = PiCamera()
 camera.resolution = (640, 480)
@@ -31,12 +40,6 @@ camera.framerate = 16
 rawCapture = PiRGBArray(camera, size=(640, 480))
 
 time.sleep(camera_warmup_time)
-
-dbx = dropbox.Dropbox(conf["dropbox_token"])
-try:
-    dbx.users_get_current_account()
-except AuthError as err:
-    sys.exit("ERROR: Invalid access token; try re-generating an access token from the app console on the web.")
 
 avg = None
 lastUploaded = datetime.datetime.now()
@@ -122,10 +125,10 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
         else:
             motionCounter += 1
 
-
-    cv2.imshow("Security Feed", frame)
-    key = cv2.waitKey(1) & 0xFF
-    if key == ord("q"):
-        break
+    if showvideo:
+        cv2.imshow("Security Feed", frame)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord("q"):
+            break
 
     rawCapture.truncate(0)
