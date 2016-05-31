@@ -9,10 +9,12 @@ import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
 
+from twilio.rest import TwilioRestClient
+
 import datetime
 import time
 
-
+min_text_hours = 1
 min_upload_seconds = 3.0
 min_motion_frames = 8
 camera_warmup_time = 2
@@ -20,6 +22,10 @@ delta_thresh = 5
 min_area = 5000
 
 dropbox_access_token = "KAelwhHrajMAAAAAAAAeygqEn85CoJbOBXqzBEV568qXeMM6d7qcRuWfOu4m27qI"
+
+TWILIO_ACCOUNT_SID = "AC1d0ac93061063ebcfa142779c5e62875"
+TWILIO_AUTH_TOKEN = "a8d86e42d0a4b68106b2499a00d0fa0b"
+client = TwilioRestClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 camera = PiCamera()
 camera.resolution = (640, 480)
@@ -36,6 +42,7 @@ except AuthError as err:
 
 avg = None
 lastUploaded = datetime.datetime.now()
+lastTexted = datetime.datetime.now()
 motionCounter = 0
 
 for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
@@ -80,6 +87,13 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     if motion:
         if motionCounter >= min_motion_frames:
             motionCounter = 0
+            if (timestamp - lastTexted).hours >- min_text_hours:
+                client.messages.create(
+                    to="4404768415",
+                    from_="+12164506265",
+                    body="Motion Detected"
+                )
+                lastTexted = timestamp
             if (timestamp - lastUploaded).seconds >= min_upload_seconds:
                 lastUploaded = timestamp
 
