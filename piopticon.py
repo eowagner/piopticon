@@ -18,7 +18,6 @@ from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
 from twilio.rest import TwilioRestClient
 
-conf = json.load(open("config.json"))
 
 min_text_seconds = 3600
 min_upload_seconds = 3.0
@@ -27,9 +26,16 @@ camera_warmup_time = 2
 delta_thresh = 5
 min_area = 5000
 
+local_dir = "/home/pi/code/piopticon/" # Should probably get by system call -- no relative addresses work if the prog starts on boot
+
+conf = json.load(open(local_dir + "config.json"))
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-showvideo', action="store_true", default=False)
 args = vars(parser.parse_args())
+
+print "waiting in hope of wifi..."
+time.sleep(10)
 
 client = TwilioRestClient(conf["twilio_sid"], conf["twilio_token"])
 
@@ -63,7 +69,7 @@ try:
         gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
         if avg is None:
-            # print "Starting background model"
+            print "Captured Background"
             #avg = gray
             avg = gray.copy().astype("float")
             rawCapture.truncate(0)
@@ -104,7 +110,7 @@ try:
                     lastUploaded = timestamp
 
                     name = "{}.jpg".format(timestamp.strftime("%I:%M:%S%p"))
-                    localName = "/home/pi/code/piopticon/"+name
+                    localName = local_dir+name
                     # dbxName = "/"+localName
                     dbxName = "/{}/{}".format(timestamp.strftime("%Y-%B-%d"), name)
                     cv2.imwrite(localName, frame)
@@ -112,7 +118,7 @@ try:
                     with open(localName, 'r') as f:
                         # We use WriteMode=overwrite to make sure that the settings in the file
                         # are changed on upload
-                        # print("Uploading " + localName + " to Dropbox as " + dbxName + "...")
+                        print("Uploading " + name + " to Dropbox as " + dbxName + "...")
                         try:
                             dbx.files_upload(f, dbxName, mode=WriteMode('overwrite'))
                         except ApiError as err:
@@ -142,5 +148,5 @@ try:
         rawCapture.truncate(0)
 
 except KeyboardInterrupt:
-    # print "exiting"
+    print "exiting"
     rawCapture.truncate(0)
