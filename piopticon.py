@@ -16,18 +16,13 @@ from twilio.rest import TwilioRestClient
 
 conf = json.load(open("config.json"))
 
-min_text_seconds = 7200
+min_text_seconds = 3600
 min_upload_seconds = 3.0
-min_motion_frames = 8
+min_motion_frames = 10
 camera_warmup_time = 2
 delta_thresh = 5
 min_area = 5000
 
-dropbox_access_token = "KAelwhHrajMAAAAAAAAeygqEn85CoJbOBXqzBEV568qXeMM6d7qcRuWfOu4m27qI"
-
-TWILIO_ACCOUNT_SID = "AC1d0ac93061063ebcfa142779c5e62875"
-TWILIO_AUTH_TOKEN = "a8d86e42d0a4b68106b2499a00d0fa0b"
-# client = TwilioRestClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 client = TwilioRestClient(conf["twilio_sid"], conf["twilio_token"])
 
 camera = PiCamera()
@@ -54,7 +49,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     timestamp = datetime.datetime.now()
     motion = False
 
-    # smallFrame = imutils.resize(frame, width=500)
+    frame = imutils.resize(frame, width=500)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
@@ -74,8 +69,6 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
 
     (_, cnts, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    
-
     for c in cnts:
         if cv2.contourArea(c) < min_area:
             continue	
@@ -84,19 +77,20 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
         motion = True
 
     ts = timestamp.strftime("%A %d %B %Y %I:%M:%S%p")
-    # cv2.putText(frame, "Room Status: {}".format(text), (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
     cv2.putText(frame, ts, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
     if motion:
         if motionCounter >= min_motion_frames:
             motionCounter = 0
-            if (timestamp - lastTexted).seconds >= min_upload_seconds:
+
+            if (timestamp - lastTexted).seconds >= min_text_seconds:
                 client.messages.create(
                     to="4404768415",
                     from_="+12164506265",
                     body="Motion Detected"
                 )
                 lastTexted = timestamp
+
             if (timestamp - lastUploaded).seconds >= min_upload_seconds:
                 lastUploaded = timestamp
 
@@ -122,7 +116,9 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
                         else:
                             print(err)
                             sys.exit()
+
                 os.remove(localName)
+
         else:
             motionCounter += 1
 
