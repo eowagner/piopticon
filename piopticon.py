@@ -129,8 +129,9 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
 
     if args['showvideo']:
         cv2.imshow("Security Feed", frame)
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord("q"):
-            break
+
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord("q"):
+        break
 
     rawCapture.truncate(0)
