@@ -63,7 +63,7 @@ try:
         gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
         if avg is None:
-            print "Starting background model"
+            # print "Starting background model"
             #avg = gray
             avg = gray.copy().astype("float")
             rawCapture.truncate(0)
@@ -103,15 +103,16 @@ try:
                 if (timestamp - lastUploaded).seconds >= min_upload_seconds:
                     lastUploaded = timestamp
 
-                    localName = "{}.jpg".format(timestamp.strftime("%I:%M:%S%p"))
+                    name = "{}.jpg".format(timestamp.strftime("%I:%M:%S%p"))
+                    localName = "/home/code/piopticon/"+name
                     # dbxName = "/"+localName
-                    dbxName = "/{}/{}".format(timestamp.strftime("%Y-%B-%d"), localName)
+                    dbxName = "/{}/{}".format(timestamp.strftime("%Y-%B-%d"), name)
                     cv2.imwrite(localName, frame)
 
                     with open(localName, 'r') as f:
                         # We use WriteMode=overwrite to make sure that the settings in the file
                         # are changed on upload
-                        print("Uploading " + localName + " to Dropbox as " + dbxName + "...")
+                        # print("Uploading " + localName + " to Dropbox as " + dbxName + "...")
                         try:
                             dbx.files_upload(f, dbxName, mode=WriteMode('overwrite'))
                         except ApiError as err:
@@ -141,5 +142,5 @@ try:
         rawCapture.truncate(0)
 
 except KeyboardInterrupt:
-    print "exiting"
+    # print "exiting"
     rawCapture.truncate(0)
