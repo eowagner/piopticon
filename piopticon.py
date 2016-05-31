@@ -3,8 +3,14 @@ from picamera import PiCamera
 import imutils
 import cv2
 
+import sys
+import dropbox
+from dropbox.files import WriteMode
+from dropbox.exceptions import ApiError, AuthError
+
 import datetime
 import time
+
 
 min_upload_seconds = 3.0
 min_motion_frames = 8
@@ -22,6 +28,12 @@ camera.framerate = 16
 rawCapture = PiRGBArray(camera, size=(640, 480))
 
 time.sleep(camera_warmup_time)
+
+dbx = dropbox.Dropbox(dropbox_access_token)
+try:
+    dbx.users_get_current_account()
+except AuthError as err:
+    sys.exit("ERROR: Invalid access token; try re-generating an access token from the app console on the web.")
 
 avg = None
 lastUploaded = datetime.datetime.now()
