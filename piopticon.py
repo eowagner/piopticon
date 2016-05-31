@@ -87,7 +87,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     if motion:
         if motionCounter >= min_motion_frames:
             motionCounter = 0
-            if (timestamp - lastTexted).seconds >= min_text_seconds:
+            if (timestamp - lastTexted).seconds >= min_upload_seconds:
                 client.messages.create(
                     to="4404768415",
                     from_="+12164506265",
