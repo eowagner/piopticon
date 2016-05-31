@@ -14,7 +14,7 @@ from twilio.rest import TwilioRestClient
 import datetime
 import time
 
-min_text_hours = 1
+min_text_seconds = 7200
 min_upload_seconds = 3.0
 min_motion_frames = 8
 camera_warmup_time = 2
@@ -87,7 +87,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     if motion:
         if motionCounter >= min_motion_frames:
             motionCounter = 0
-            if (timestamp - lastTexted).hours >- min_text_hours:
+            if (timestamp - lastTexted).seconds >= min_text_seconds:
                 client.messages.create(
                     to="4404768415",
                     from_="+12164506265",
