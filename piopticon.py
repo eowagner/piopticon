@@ -24,7 +24,9 @@ camera_warmup_time = 2
 delta_thresh = 5
 min_area = 5000
 
+parser = argparse.ArgumentParser()
 parser.add_argument('-showvideo', action="store_true", default=False)
+args = vars(parser.parse_args())
 
 client = TwilioRestClient(conf["twilio_sid"], conf["twilio_token"])
 
@@ -125,7 +127,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
         else:
             motionCounter += 1
 
-    if showvideo:
+    if args['showvideo']:
         cv2.imshow("Security Feed", frame)
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
