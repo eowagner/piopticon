@@ -13,14 +13,12 @@ import time
 
 
 min_upload_seconds = 3.0
-min_motion_frames = 8
+min_motion_frames = 4
 camera_warmup_time = .2
 delta_thresh = 5
 min_area = 5000
 
-dropbox_app_key = "4j8guc5902blg9d"
-dropbox_app_secret = "1ra4rejdoq7655i"
-dropbox_access_token = "naSB87XjOWgAAAAAAAAAC98N-JLXZ1mL64QcNVfA60idysi52ftH6wen-UvK38Li"
+dropbox_access_token = "KAelwhHrajMAAAAAAAAeygqEn85CoJbOBXqzBEV568qXeMM6d7qcRuWfOu4m27qI"
 
 camera = PiCamera()
 camera.resolution = (640, 480)
@@ -37,6 +35,7 @@ except AuthError as err:
 
 avg = None
 lastUploaded = datetime.datetime.now()
+motionCounter = 0
 
 for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     frame = f.array
@@ -78,27 +77,30 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     cv2.putText(frame, ts, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
     if motion:
-        if (timestamp - lastUploaded).seconds >= min_upload_seconds:
-            localName = "1.jpg"
-            dbxName = "/"+localName
-            cv2.imwrite(localName, frame)
-            with open(localName, 'r') as f:
-                # We use WriteMode=overwrite to make sure that the settings in the file
-                # are changed on upload
-                print("Uploading " + localName + " to Dropbox as " + dbxName + "...")
-                try:
-                    dbx.files_upload(f, dbxName, mode=WriteMode('overwrite'))
-                except ApiError as err:
-                    # This checks for the specific error where a user doesn't have
-                    # enough Dropbox space quota to upload this file
-                    if err.error.is_path() and err.error.get_path().error.is_insufficient_space():
-                        sys.exit("ERROR: Cannot back up; insufficient space.")
-                    elif err.user_message_text:
-                        print(err.user_message_text)
-                        sys.exit()
-                    else:
-                        print(err)
-                        sys.exit()
+        if motionCounter >= min_motion_frames:
+            if (timestamp - lastUploaded).seconds >= min_upload_seconds:
+                localName = "1.jpg"
+                dbxName = "/"+localName
+                cv2.imwrite(localName, frame)
+                with open(localName, 'r') as f:
+                    # We use WriteMode=overwrite to make sure that the settings in the file
+                    # are changed on upload
+                    print("Uploading " + localName + " to Dropbox as " + dbxName + "...")
+                    try:
+                        dbx.files_upload(f, dbxName, mode=WriteMode('overwrite'))
+                    except ApiError as err:
+                        # This checks for the specific error where a user doesn't have
+                        # enough Dropbox space quota to upload this file
+                        if err.error.is_path() and err.error.get_path().error.is_insufficient_space():
+                            sys.exit("ERROR: Cannot back up; insufficient space.")
+                        elif err.user_message_text:
+                            print(err.user_message_text)
+                            sys.exit()
+                        else:
+                            print(err)
+                            sys.exit()
+        else:
+            motionCounter += 1
 
 
     cv2.imshow("Security Feed", frame)
