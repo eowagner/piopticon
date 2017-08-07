@@ -1,0 +1,16 @@
+{
+  "dropbox_token": "KAelwhHrajMAAAAAAAAeygqEn85CoJbOBXqzBEV568qXeMM6d7qcRuWfOu4m27qI",
+  "gmail_user": "",
+  "gmail_password": "",
+  "send_to": "",
+  "min_text_seconds": 3600,
+  "min_upload_seconds": 3.0,
+  "min_motion_frames": 8,
+  "start_delay": 10,
+  "camera_warmup_time": 2,
+  "delta_thresh": 5,
+  "min_contour_area": 5000,
+  "fps": 16,
+  "resolution": [1296, 730],
+  "resize_to": 600
+}

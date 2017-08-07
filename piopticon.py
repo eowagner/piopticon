@@ -19,6 +19,11 @@ from dropbox.exceptions import ApiError, AuthError
 
 import smtplib
 
+local_dir = os.path.dirname(os.path.realpath(__file__)) + "/"
+# local_dir = "/home/pi/code/piopticon/" # Should probably get by system call--relative addresses do not work if the prog starts on boot
+
+conf = json.load(open(local_dir + "config.json"))
+
 subject = 'piopticon motion detected'  
 body = ''
 
@@ -28,12 +33,7 @@ To: %s
 Subject: %s
 
 %s
-""" % (sent_from, conf['send_to'], subject, body)
-
-local_dir = os.path.dirname(os.path.realpath(__file__)) + "/"
-# local_dir = "/home/pi/code/piopticon/" # Should probably get by system call--relative addresses do not work if the prog starts on boot
-
-conf = json.load(open(local_dir + "config.json"))
+""" % (conf['gmail_user'], conf['send_to'], subject, body)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-showvideo', action="store_true", default=False)
@@ -104,15 +104,15 @@ try:
                 motionCounter = 0
 
                 if (timestamp - lastTexted).seconds >= conf['min_text_seconds']:
-                    try:  
-    					server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-    					server.ehlo()
-    					server.login(conf['gmail_user'], conf['gmail_password'])
-    					server.sendmail(conf['gmail_user'], conf['send_to'], email_text)
-    					server.close()
-    					print('Email sent!')
-					except:  
-    					print('Something went wrong...')
+                    try:
+                        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+    			server.ehlo()
+    			server.login(conf['gmail_user'], conf['gmail_password'])
+    			server.sendmail(conf['gmail_user'], conf['send_to'], email_text)
+    			server.close()
+    			print('Email sent!')
+		    except:  
+    			print('Something went wrong...')
 
                 if (timestamp - lastUploaded).seconds >= conf['min_upload_seconds']:
                     lastUploaded = timestamp
