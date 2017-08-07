@@ -111,6 +111,7 @@ try:
     			server.sendmail(conf['gmail_user'], conf['send_to'], email_text)
     			server.close()
     			print('Email sent!')
+			lastTexted = timestamp;
 		    except:  
     			print('Something went wrong...')
 
