@@ -16,10 +16,22 @@ import argparse
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
-from twilio.rest import TwilioRestClient
 
+import smtplib
 
-local_dir = "/home/pi/code/piopticon/" # Should probably get by system call--relative addresses do not work if the prog starts on boot
+subject = 'piopticon motion detected'  
+body = ''
+
+email_text = """\  
+From: %s  
+To: %s  
+Subject: %s
+
+%s
+""" % (sent_from, conf['send_to'], subject, body)
+
+local_dir = os.path.dirname(os.path.realpath(__file__)) + "/"
+# local_dir = "/home/pi/code/piopticon/" # Should probably get by system call--relative addresses do not work if the prog starts on boot
 
 conf = json.load(open(local_dir + "config.json"))
 
@@ -29,8 +41,6 @@ args = vars(parser.parse_args())
 
 print "Waiting for wifi..."
 time.sleep(conf['start_delay'])
-
-client = TwilioRestClient(conf["twilio_sid"], conf["twilio_token"])
 
 dbx = dropbox.Dropbox(conf["dropbox_token"])
 try:
@@ -94,12 +104,15 @@ try:
                 motionCounter = 0
 
                 if (timestamp - lastTexted).seconds >= conf['min_text_seconds']:
-                    client.messages.create(
-                        to = conf["destination_number"],
-                        from_= conf["origin_number"],
-                        body = "Piopticon Detected Motion"
-                    )
-                    lastTexted = timestamp
+                    try:  
+    					server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+    					server.ehlo()
+    					server.login(conf['gmail_user'], conf['gmail_password'])
+    					server.sendmail(conf['gmail_user'], conf['send_to'], email_text)
+    					server.close()
+    					print('Email sent!')
+					except:  
+    					print('Something went wrong...')
 
                 if (timestamp - lastUploaded).seconds >= conf['min_upload_seconds']:
                     lastUploaded = timestamp
