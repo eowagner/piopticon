@@ -41,19 +41,19 @@ except AuthError as err:
 
 
 def send_gmail(subject, body):
-	msg = "\r\n".join(["From: " + conf["gmail_user"], "To: " + conf["send_to"], "Subject: " + subject, "", body])
-	try:
-		server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-		server.ehlo()
-		server.login(conf["gmail_user"], conf["gmail_password"])
-		server.sendmail(conf["gmail_user"], [conf["send_to"]], msg)
-		server.close()
-		print('Email sent!')
-	except:
-		print('Failed to send email.')
+    msg = "\r\n".join(["From: " + conf["gmail_user"], "To: " + conf["send_to"], "Subject: " + subject, "", body])
+    try:
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.ehlo()
+        server.login(conf["gmail_user"], conf["gmail_password"])
+        server.sendmail(conf["gmail_user"], [conf["send_to"]], msg)
+        server.close()
+        print('Email sent!')
+    except:
+        print('Failed to send email.')
 
 def upload_to_dropbox(timestamp, frame):
-	name = "{}.jpg".format(timestamp.strftime("%I:%M:%S%p"))
+    name = "{}.jpg".format(timestamp.strftime("%I:%M:%S%p"))
     localName = local_dir+name
     dbxName = "/{}/{}".format(timestamp.strftime("%Y-%B-%d"), name)
     cv2.imwrite(localName, frame)
@@ -63,10 +63,10 @@ def upload_to_dropbox(timestamp, frame):
     # are changed on upload
     print("Uploading " + name + " to Dropbox as " + dbxName + "...")
     try:
-    	dbx.files_upload(f, dbxName, mode=WriteMode('overwrite'))
+        dbx.files_upload(f, dbxName, mode=WriteMode('overwrite'))
     except ApiError as err:
-    	send_gmail("Error uploading to dropbox", "")
-    	sys.exit()
+        send_gmail("Error uploading to dropbox", "")
+        sys.exit()
 
     os.remove(localName)
 
@@ -135,7 +135,7 @@ try:
                 motionCounter += 1
 
         if (timestamp - lastUploaded).seconds >= DAY_IN_SECONDS:
-        	upload_to_dropbox(timestamp, frame)
+            upload_to_dropbox(timestamp, frame)
 
         if args['showvideo']:
             cv2.imshow("Security Feed", frame)
