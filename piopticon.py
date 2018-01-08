@@ -24,20 +24,11 @@ local_dir = os.path.dirname(os.path.realpath(__file__)) + "/"
 
 conf = json.load(open(local_dir + "config.json"))
 
-subject = 'piopticon motion detected'  
-body = ''
-
-email_text = """\  
-From: %s  
-To: %s  
-Subject: %s
-
-%s
-""" % (conf['gmail_user'], conf['send_to'], subject, body)
-
 parser = argparse.ArgumentParser()
 parser.add_argument('-showvideo', action="store_true", default=False)
 args = vars(parser.parse_args())
+
+DAY_IN_SECONDS = 86400
 
 print "Waiting for wifi..."
 time.sleep(conf['start_delay'])
@@ -47,6 +38,37 @@ try:
     dbx.users_get_current_account()
 except AuthError as err:
     sys.exit("ERROR: Invalid access token; try re-generating an access token from the app console on the web.")
+
+
+def send_gmail(subject, body):
+	msg = "\r\n".join(["From: " + conf["gmail_user"], "To: " + conf["send_to"], "Subject: " + subject, "", body])
+	try:
+		server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+		server.ehlo()
+		server.login(conf["gmail_user"], conf["gmail_password"])
+		server.sendmail(conf["gmail_user"], [conf["send_to"]], msg)
+		server.close()
+		print('Email sent!')
+	except:
+		print('Failed to send email.')
+
+def upload_to_dropbox(timestamp, frame):
+	name = "{}.jpg".format(timestamp.strftime("%I:%M:%S%p"))
+    localName = local_dir+name
+    dbxName = "/{}/{}".format(timestamp.strftime("%Y-%B-%d"), name)
+    cv2.imwrite(localName, frame)
+
+    with open(localName, 'r') as f:
+    # We use WriteMode=overwrite to make sure that the settings in the file
+    # are changed on upload
+    print("Uploading " + name + " to Dropbox as " + dbxName + "...")
+    try:
+    	dbx.files_upload(f, dbxName, mode=WriteMode('overwrite'))
+    except ApiError as err:
+    	send_gmail("Error uploading to dropbox", "")
+    	sys.exit()
+
+    os.remove(localName)
 
 camera = PiCamera()
 camera.resolution = tuple(conf["resolution"])
@@ -104,43 +126,16 @@ try:
                 motionCounter = 0
 
                 if (timestamp - lastTexted).seconds >= conf['min_text_seconds']:
-                    try:
-                        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-    			server.ehlo()
-    			server.login(conf['gmail_user'], conf['gmail_password'])
-    			server.sendmail(conf['gmail_user'], conf['send_to'], email_text)
-    			server.close()
-    			print('Email sent!')
-			lastTexted = timestamp;
-		    except:  
-    			print('Something went wrong...')
+                    send_gmail("Piopticon Detected Motion!", "Image uploaded to dropbox.")
 
                 if (timestamp - lastUploaded).seconds >= conf['min_upload_seconds']:
-                    lastUploaded = timestamp
-
-                    name = "{}.jpg".format(timestamp.strftime("%I:%M:%S%p"))
-                    localName = local_dir+name
-                    dbxName = "/{}/{}".format(timestamp.strftime("%Y-%B-%d"), name)
-                    cv2.imwrite(localName, frame)
-
-                    with open(localName, 'r') as f:
-                        # We use WriteMode=overwrite to make sure that the settings in the file
-                        # are changed on upload
-                        print("Uploading " + name + " to Dropbox as " + dbxName + "...")
-                        try:
-                            dbx.files_upload(f, dbxName, mode=WriteMode('overwrite'))
-                        except ApiError as err:
-                            client.messages.create(
-                                to = conf["destination_number"],
-                                from_= conf["origin_number"],
-                                body = "Piopticon Dropbox Error!"
-                             )
-                            sys.exit()
-
-                    os.remove(localName)
+                    upload_to_dropbox(timestamp, frame)
 
             else:
                 motionCounter += 1
+
+        if (timestamp - lastUploaded).seconds >= DAY_IN_SECONDS:
+        	upload_to_dropbox(timestamp, frame)
 
         if args['showvideo']:
             cv2.imshow("Security Feed", frame)
